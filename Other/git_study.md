@@ -279,7 +279,7 @@ https://github.com/Perfect317/Hexo-comment.git
 git push -u origin main
 ```
 
-查看远程仓库git remote -v
+查看远程仓库git remote -v**
 
 ## 2.存在本地仓库，直接和远程仓库连接
 

