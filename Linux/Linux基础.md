@@ -338,3 +338,74 @@ Linux tee命令用于读取标准输入的数据，并将其内容输出成文�
 Linux tee命令用于读取标准输入的数据，并将其内容输出成文件。
 
 tee指令会从标准输入设备读取数据，将其内容输出到标准输出设备，同时保存成文件。
+
+## wc（word count）
+
+统计行数
+
+wc -l file.txt
+
+# 解压
+
+**ZIP格式**
+
+压缩文件：
+
+```
+zip compressed.zip file1.txt file2.txt folder/
+```
+
+解压文件：
+
+```
+unzip compressed.zip -d destination_folder/
+```
+
+**TAR格式**
+
+压缩文件（使用GZIP）：
+
+```
+tar -cvzf archive.tar.gz file1.txt file2.txt folder/
+```
+
+解压文件（使用GZIP）：
+
+```
+tar -xvzf archive.tar.gz -C destination_folder/
+```
+
+**GZIP格式**
+
+压缩文件：
+
+```
+gzip file.txt
+```
+
+解压文件：
+
+```
+gzip -d file.txt.gz
+```
+
+**BZIP2格式**
+
+压缩文件：
+
+```
+bzip2 file.txt
+```
+
+解压文件：
+
+```
+bzip2 -d file.txt.bz2
+```
+
+**7z格式**
+
+```
+7z x file.7z -o directory
+```
+

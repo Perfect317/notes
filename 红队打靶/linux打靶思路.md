@@ -454,18 +454,6 @@ root@kali: telnet example.com 143
 + TlRMTVNTUAACAAAACgAKADgAAAAFgooCBqqVKFrKPCMAAAAAAAAAAEgASABCAAAABgOAJQAAAA9JAEkAUwAwADEAAgAKAEkASQBTADAAMQABAAoASQBJAFMAMAAxAAQACgBJAEkAUwAwADEAAwAKAEkASQBTADAAMQAHAAgAHwMI0VPy1QEAAAAA
 ```
 
-## 513端口 Pentesting Rlogin 
-
-可以尝试登录到不需要密码既可以访问的远程主机
-
-```
-rlogin <IP> -l <username>
-```
-
-
-
-
-
 ## 139或445端口 samba
 
 ### 1.smbclient
@@ -497,7 +485,14 @@ rlogin <IP> -l <username>
 ```
 smbclient -L 10.10.11.202 列出服务器上的共享资源
 smbclient //10.10.11.202/directory -U user 连接到服务器上的共享资源,有些情况也可以不指定用户
+smbclient -L 10.10.10.193 -U svc-print --password=$fab@s3Rv1ce$1
 smbclient //10.10.11.202/directory
+```
+
+### 2.smbmap
+
+```
+smbmap -H 10.10.10.193 -u svc-scan -p '$fab@s3Rv1ce$1'
 ```
 
 
@@ -532,11 +527,84 @@ smb_version
 smbclient //10.129.1.14/目录
 ```
 
+## 161端口 SNMP
+
+**SNMP - 简单网络管理协议**是一种用于监控网络中不同设备（如路由器、交换机、打印机、物联网……）的协议。
+
+```
+信息枚举
+
+snmpwalk + -c SNMP读密码 + -v 1或2(SNMP版本) + 交换机或路由器IP地址 + OID(对象标示符)
+（-v指版本，-c 指密钥，即客户端snmp.conf里所设置）
+
+public + ip/host 
+
+1、snmpwalk -v 2c -c public 9.0.0.1 .1.3.6.1.2.1.4.20 取得IP信息
+
+2、snmpwalk -v 2c -c public 9.0.0.1 system 查看系统信息
+
+3、snmpwalk -v 2c -c public 9.0.0.1 ifDescr 获取网卡信息
+
+4、snmpwalk -v 2c -c public 9.0.0.1 所有系统信息都获取
+
+5、snmpwalk -v 2c -c public 9.0.0.1 1.3.6.1.4.1.9.9.109.1.1.1.1.7.1 获取CPU使用率
+
+
+在日常监控中,经常会用到snmp服务,而snmpwalk命令则是测试系统各种信息最有效的方法,命令格式：
+snmpwalk -c SNMP读密码 -v 1或2(代表SNMP版本) 交换机或路由器IP地址 OID(对象标示符)
+```
+
+
+
 ## 389端口 LDAP（轻量级目录访问协议）
 
 使用主要用于定位各种实体，例如组织、个人以及网络中的文件和设备等资源，包括公共和私有。与其前身 DAP 相比，它通过占用更少的代码提供了一种简化的方法。
 
 **默认端口：**389 和 636 （ldaps）。默认情况下，全局目录（ActiveDirectory 中的 LDAP）在 LDAPS 的端口 **3268** 和 **3269** 上可用。
+
+```
+一些属性类型的介绍
+c - country name，国家名
+cn - common name，通用名称
+dc - domain component，域名组件
+o - organization name，机构名
+ou - organization unit name，机构的单位名
+sn - surname，姓
+st - state or province name，州或省
+```
+
+```
+ldapsearch -H ldaps://company.com:636/ -x -s base  namingcontexts
+```
+
+```
+-x
+
+使用 简单认证（Simple Authentication），即不使用 SASL 认证。
+-s base
+
+指定 搜索范围（scope）：
+base（基准搜索）：只查询 根目录对象，不会搜索子目录。
+其他可选值：
+one（单层搜索）：仅查询直接子对象，不递归。
+sub（子树搜索）：递归查询整个目录树
+
+namingcontexts
+
+查询 LDAP 服务器的 namingContexts 属性，该属性存储了服务器管理的 目录树的根 DN（Base DN）。
+```
+
+
+
+## 513端口 Pentesting Rlogin 
+
+可以尝试登录到不需要密码既可以访问的远程主机
+
+```
+rlogin <IP> -l <username>
+```
+
+
 
 ## 1433 MSSQL 
 
@@ -755,7 +823,7 @@ WPScan是 **Kali Linux默认自带** 的一款 **漏洞扫描工具** ，它采�
 wpscan --url https://192.168.137.142:12380/blogblog --disable-tls-checks 
 ```
 
-# 密码爆破
+# 协议密码爆破
 
 ## hydra
 
@@ -766,9 +834,7 @@ wpscan --url https://192.168.137.142:12380/blogblog --disable-tls-checks
 
 ```
 
-```
-
-```
+## crackmapexec
 
 
 
@@ -799,3 +865,36 @@ git_dumper http://website.com/.git ~/website
 git-dumper http://10.10.11.177/dev/.git dev
 ```
 
+# 用户枚举
+
+## Cewl
+
+爬虫会根据指定的URL和深度进行爬取，然后打印出可用于密码破解的字典：
+
+```
+cewl http://www.ignitetechnologies.in/ -w dict.txt
+```
+
+如果你想生成指定长度的密码字典，你可以使用-m选项来设置：
+
+```
+cewl http://www.ignitetechnologies.in/ -m 9
+```
+
+你可以使用-e选项来启用Email参数，并配合-n选项来隐藏工具在爬取网站过程中生成的密码字典：
+
+```
+cewl http://www.ignitetechnologies.in/ -n -e
+```
+
+如果你想要计算目标网站中某个词的重复出现次数，你可以使用-c选项来开启参数计算功能：
+
+```
+cewl http://www.ignitetechnologies.in/ -c
+```
+
+如果你想增加爬虫的爬取深度以生成更大的字典文件，你可以使用-d选项来指定爬取深度，默认的爬取深度为2：
+
+```
+cewl http://www.ignitetechnologies.in/ -d 3
+```
