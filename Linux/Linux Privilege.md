@@ -1,3 +1,10 @@
+---
+title: linux提权
+date: 2025-03-19 14:50:13	
+tags: linux提权
+categories: Linux
+---
+
 
 
 # 信息枚举
@@ -613,6 +620,12 @@ os.system("/bin/bash")
 <font color=red>脚本的命名格式`dstat_xxx.py`</font>
 
 使用sudo来调用这个插件，即可得到root权限
+
+
+
+## SUID-enlightenment_sys
+
+[CVE-2022-37706](https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit)
 
 # 脏牛提权
 

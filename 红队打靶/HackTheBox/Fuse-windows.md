@@ -1,6 +1,6 @@
 ---
 title: HackTheBox-Fuse-Findows
-date: 2025
+date: 2025-3-24 20:34:00
 tags: 红队
 categories: 红队打靶-Windows
 ---
@@ -111,3 +111,16 @@ querygroup <RID>  # 提供有关特定组的信息
 ![image-20250323235609905](Fuse-windosw/image-20250323235609905.png)
 
 `svc-print:$fab@s3Rv1ce$1`
+
+使用这个[winrm](https://github.com/Hackplayers/evil-winrm.git)工具去连接winrm
+
+安装方法：
+
+```
+gem install evil-winrm
+```
+
+```
+evil-winrm -i 10.10.10.193 -u svc-print -p '$fab@s3Rv1ce$1'
+```
+

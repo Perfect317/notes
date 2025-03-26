@@ -898,3 +898,12 @@ cewl http://www.ignitetechnologies.in/ -c
 ```
 cewl http://www.ignitetechnologies.in/ -d 3
 ```
+
+# 升级bash会话
+
+升级之后可以支持上下条命令滚动以及ctrl+c等
+
+https://www.youtube.com/watch?v=DqE6DxqJg8Q
+
+![image-20250325192322354](linux%E6%89%93%E9%9D%B6%E6%80%9D%E8%B7%AF/image-20250325192322354.png)
+
