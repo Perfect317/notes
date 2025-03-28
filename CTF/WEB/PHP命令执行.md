@@ -106,7 +106,7 @@ $process = proc_open($cmd, $descriptorspec, $pipes, null, null);
 
 大括号{ls,-l}
 
-$IFS代替空格 $IFS、$IFS&2、$IFS9、${IFS}
+$IF；S代替空格 $IFS、$IFS&2、$IFS9、${IFS}
 
 重定向字符< , <>
 
