@@ -256,6 +256,10 @@ usermod -a -G GROUP USER
 [root@localhost ~]# chown [-R] 所有者:所属组 文件或目录
 ```
 
+## lsof -p
+
+查看进程打开的文件地址
+
 # 文本处理
 
 ## cut 命令
