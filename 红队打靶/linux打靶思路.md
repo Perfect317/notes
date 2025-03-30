@@ -907,3 +907,37 @@ https://www.youtube.com/watch?v=DqE6DxqJg8Q
 
 ![image-20250325192322354](linux%E6%89%93%E9%9D%B6%E6%80%9D%E8%B7%AF/image-20250325192322354.png)
 
+靶机输入
+
+```
+script /dev/null -c bash
+^Z
+```
+
+攻击机输入
+
+```
+stty raw -echo; fg
+reset
+screen
+```
+
+# 数据库连接
+
+```
+psql -U postgres -d postresql -h 127.0.0.1  -p 5432
+```
+
+—U 指定用户名， -d指定数据库， -h指定ip
+
+## postres查询语法
+
+列出所有数据库 	\list
+
+显示当前连接的数据库 	\c
+
+切换到另一个数据库	 \c database_name
+
+查询数据库中的表名	\dt
+
+查询表中有哪些列		\d table_name
