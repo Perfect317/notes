@@ -14,6 +14,14 @@
 - `-n` 不解析名称
 - `-o` 显示计时器
 
+查看开放的端口
+
+```
+netstat -tuln
+```
+
+
+
 ## nc
 
 | -l   | 使用监听模式，管控传入的资料               |
@@ -262,7 +270,31 @@ usermod -a -G GROUP USER
 
 ## lsof -p
 
-查看进程打开的文件地址
+-a 列出打开文件存在的进程
+
+-c<进程名> 列出指定进程所打开的文件
+
+-g 列出GID号进程详情
+
+-d<文件号> 列出占用该文件号的进程
+
++d<目录> 列出目录下被打开的文件
+
++D<目录> 递归列出目录下被打开的文件
+
+-n<目录> 列出使用NFS的文件
+
+-i<条件> 列出符合条件的进程。（4、6、协议、:端口、 @ip ）
+
+-p<进程号> 列出指定进程号所打开的文件
+
+-u 列出UID号进程详情
+
+-h 显示帮助信息
+
+-v 显示版本信息
+
+
 
 
 
@@ -359,6 +391,53 @@ tee指令会从标准输入设备读取数据，将其内容输出到标准输�
 
 wc -l file.txt
 
+## uniq
+
+uniq删除重复相邻行
+
+-c 打印重复行的次数
+
+## grep
+
+想查看多个，-e "filed" -e "accept"
+
+-i 忽略大小写
+
+-n 输出行号
+
+- `-v`：反向查找，只打印不匹配的行。
+
+- `-r`：递归查找子目录中的文件。
+- `-l`：只打印匹配的文件名。
+- `-c`：只打印匹配的行数。
+- **-a 或 --text** : 不要忽略二进制的数据。
+- **-A<显示行数> 或 --after-context=<显示行数>** : 除了显示符合范本样式的那一列之外，并显示该行之后的内容。
+- **-b 或 --byte-offset** : 在显示符合样式的那一行之前，标示出该行第一个字符的编号。
+- **-B<显示行数> 或 --before-context=<显示行数>** : 除了显示符合样式的那一行之外，并显示该行之前的内容。
+- **-c 或 --count** : 计算符合样式的列数。
+- **-C<显示行数> 或 --context=<显示行数>或-<显示行数>** : 除了显示符合样式的那一行之外，并显示该行之前后的内容。
+- **-d <动作> 或 --directories=<动作>** : 当指定要查找的是目录而非文件时，必须使用这项参数，否则grep指令将回报信息并停止动作。
+- **-e<范本样式> 或 --regexp=<范本样式>** : 指定字符串做为查找文件内容的样式。
+- **-E 或 --extended-regexp** : 将样式为延伸的正则表达式来使用。
+- **-f<规则文件> 或 --file=<规则文件>** : 指定规则文件，其内容含有一个或多个规则样式，让grep查找符合规则条件的文件内容，格式为每行一个规则样式。
+- **-F 或 --fixed-regexp** : 将样式视为固定字符串的列表。
+- **-G 或 --basic-regexp** : 将样式视为普通的表示法来使用。
+- **-h 或 --no-filename** : 在显示符合样式的那一行之前，不标示该行所属的文件名称。
+- **-H 或 --with-filename** : 在显示符合样式的那一行之前，表示该行所属的文件名称。
+- **-i 或 --ignore-case** : 忽略字符大小写的差别。
+- **-l 或 --file-with-matches** : 列出文件内容符合指定的样式的文件名称。
+- **-L 或 --files-without-match** : 列出文件内容不符合指定的样式的文件名称。
+- **-n 或 --line-number** : 在显示符合样式的那一行之前，标示出该行的列数编号。
+- **-o 或 --only-matching** : 只显示匹配PATTERN 部分。
+- **-q 或 --quiet或--silent** : 不显示任何信息。
+- **-r 或 --recursive** : 此参数的效果和指定"-d recurse"参数相同。
+- **-s 或 --no-messages** : 不显示错误信息。
+- **-v 或 --invert-match** : 显示不包含匹配文本的所有行。
+- **-V 或 --version** : 显示版本信息。
+- **-w 或 --word-regexp** : 只显示全字符合的列。
+- **-x --line-regexp** : 只显示全列符合的列。
+- **-y** : 此参数的效果和指定"-i"参数相同。
+
 # 解压
 
 **ZIP格式**
@@ -421,5 +500,59 @@ bzip2 -d file.txt.bz2
 
 ```
 7z x file.7z -o directory
+```
+
+# 防火墙
+
+## iptables
+
+### 开放端口
+
+```shell
+iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 8080 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 3306 -j ACCEPT
+```
+
+### 删除端口
+
+```shell
+iptables -L -n
+或
+iptables -L -n --line-number
+
+iptables -D INPUT 1
+iptables -D INPUT 2
+iptables -D INPUT 3
+iptables -D INPUT 4
+```
+
+## firewalld
+
+### 开放端口
+
+```shell
+1. firewall-cmd --zone=public --add-port=80/tcp --permanent  #放行80端口
+2. firewall-cmd --zone=public --add-port=443/tcp --permanent #放行443端口
+3. 开放多个端口
+ firewall-cmd --zone=public --add-port=80-85/tcp --permanent
+
+ firewall-cmd --reload  #重新载入 返回 success 代表成功
+ 
+4.查看 返回 yes 代表开启成功
+ firewall-cmd --zone=public --query-port=80/tcp
+
+```
+
+### 关闭端口
+
+```shell
+删除端口 返回 success 代表成功
+1 firewall-cmd --zone=public --remove-port=80/tcp --permanent   #关闭80端口
+
+2、重新载入 返回 success 代表成功
+ firewall-cmd --reload
+
 ```
 
