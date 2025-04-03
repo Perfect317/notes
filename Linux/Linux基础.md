@@ -264,6 +264,12 @@ usermod -a -G GROUP USER
 
 查看进程打开的文件地址
 
+
+
+## ltrace
+
+打印进程对系统库的调用信息
+
 # 文本处理
 
 ## cut 命令
