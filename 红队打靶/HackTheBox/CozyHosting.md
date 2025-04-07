@@ -1,3 +1,10 @@
+---
+title: HackTheBox-CozyHosting
+date: 2025-3-27 20:00:00
+tags: 红队
+categories: 红队打靶-Linux
+---
+
 ## nmap
 
 ![image-20250327102833282](CozyHosting/image-20250327102833282.png)

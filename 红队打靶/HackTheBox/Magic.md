@@ -1,3 +1,14 @@
+---
+title: HackTheBox-Magic
+date: 2025-4-3 20:00:00
+tags: 红队
+categories: 红队打靶-Linux
+---
+
+
+
+
+
 ## nmap
 
 ![image-20250402171145487](Magic/image-20250402171145487.png)
