@@ -1,3 +1,12 @@
+---
+title: HackTheBox-LinkVortex
+date: 2025-4-7 20:00:00
+tags: 红队
+categories: 红队打靶-Linux
+---
+
+
+
 # nmap
 
 
