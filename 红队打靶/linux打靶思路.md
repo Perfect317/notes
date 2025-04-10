@@ -842,6 +842,10 @@ wpscan --url https://192.168.137.142:12380/blogblog --disable-tls-checks
 
 ## crackmapexec
 
+```
+crackmapexec smb 10.10.10.184 -u username -p password
+```
+
 
 
 # 请求方法

